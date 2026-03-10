@@ -1,0 +1,36 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  --background: #0b1120;
+  --foreground: #c8d1e0;
+  --card: #111d35;
+  --card-foreground: #e2e7ef;
+  --popover: #111d35;
+  --popover-foreground: #e2e7ef;
+  --primary: #7c90aa;
+  --primary-foreground: #060d1a;
+  --secondary: #1a2d4f;
+  --secondary-foreground: #c8d1e0;
+  --muted: #111d35;
+  --muted-foreground: #5a6a85;
+  --accent: #1e3560;
+  --accent-foreground: #a8bdd4;
+  --destructive: #7f1d1d;
+  --destructive-foreground: #fca5a5;
+  --border: #1a2d4f;
+  --input: #111d35;
+  --ring: #7c90aa;
+  --radius: 0px;
+
+  --navy-950: #060d1a;
+  --navy-900: #0b1120;
+  --navy-800: #111d35;
+  --navy-700: #1a2d4f;
+  --navy-600: #1e3560;
+  --steel: #7c90aa;
+  --silver-100: #e2e7ef;
+  --silver-200: #c8d1e0;
+  --silver-400: #8a99b3;
+  --silver-600: #5a6a85;
+}

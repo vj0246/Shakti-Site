@@ -74,6 +74,8 @@ export function FacilitiesSection() {
  <img
  src="/spectro-lab.png"
  alt="Manufacturing plant interior"
+ loading="lazy"
+ decoding="async"
  style={{ width: "100%", height: 340, objectFit: "cover", objectPosition: "center top", display: "block", filter: "brightness(0.85) contrast(1.05)" }}
  />
  <div style={{ position: "absolute", bottom: 0, right: 0, background: "rgba(28,43,58,0.9)", padding: "12px 20px" }}>

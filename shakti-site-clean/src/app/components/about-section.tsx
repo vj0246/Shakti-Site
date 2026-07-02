@@ -88,6 +88,8 @@ export function AboutSection() {
  <img
  src="/about-metal.png"
  alt="Shakti Alloys manufacturing facility"
+ loading="lazy"
+ decoding="async"
  style={{ width: "100%", height: 220, objectFit: "cover", display: "block", filter: "brightness(0.88) contrast(1.05)" }}
  />
  <div style={{ position: "absolute", bottom: 0, left: 0, background: "#1C2B3A", padding: "7px 14px" }}>

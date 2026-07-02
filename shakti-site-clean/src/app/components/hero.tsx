@@ -32,6 +32,8 @@ export function Hero() {
         <img
           src="/foundry-hero.png"
           alt="Aluminium foundry manufacturing"
+          fetchPriority="high"
+          decoding="async"
           style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%", display: "block" }}
         />
         <div style={{

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { trackEvent } from "../../lib/analytics";
 
 const nav = [
  { label: "About", href: "#about" },
@@ -47,7 +48,7 @@ export function Header() {
 
  <nav style={{ display: "flex", alignItems: "center" }} className="desk-nav">
  {nav.map(n => (
- <a key={n.href} href={n.href} style={{
+ <a key={n.href} href={n.href} onClick={() => trackEvent("nav_click", { label: n.label, href: n.href })} style={{
  padding: "8px 15px", fontFamily: "'Outfit', sans-serif", fontWeight: 500, fontSize: 13,
  color: active === n.href ? "#1C2B3A" : "#4A5A6B", textDecoration: "none",
  letterSpacing: "0.02em", transition: "color 0.2s",
@@ -57,7 +58,7 @@ export function Header() {
  onMouseLeave={e => e.currentTarget.style.color = active === n.href ? "#1C2B3A" : "#4A5A6B"}
  >{n.label}</a>
  ))}
- <a href="#contact" style={{
+ <a href="#contact" onClick={() => trackEvent("cta_click", { label: "Request Quote", location: "header_desktop" })} style={{
  marginLeft: 14, padding: "9px 20px", background: "#1C2B3A", color: "#F4F1EC",
  fontFamily: "'Outfit', sans-serif", fontWeight: 600, fontSize: 12,
  letterSpacing: "0.08em", textTransform: "uppercase", textDecoration: "none", transition: "background 0.2s",
@@ -67,7 +68,7 @@ export function Header() {
  >Request Quote</a>
  </nav>
 
- <button onClick={() => setOpen(!open)} className="mob-btn" style={{ background: "none", border: "none", cursor: "pointer", color: "#1C2B3A", padding: 4 }}>
+ <button onClick={() => { const next = !open; setOpen(next); trackEvent(next ? "mobile_menu_open" : "mobile_menu_close"); }} className="mob-btn" style={{ background: "none", border: "none", cursor: "pointer", color: "#1C2B3A", padding: 4 }}>
  {open ? <X size={20} /> : <Menu size={20} />}
  </button>
  </div>
@@ -75,13 +76,13 @@ export function Header() {
  {open && (
  <div style={{ background: "#F4F1EC", borderTop: "1px solid rgba(28,43,58,0.08)", padding: "12px 28px 20px" }}>
  {nav.map(n => (
- <a key={n.href} href={n.href} onClick={() => setOpen(false)} style={{
+ <a key={n.href} href={n.href} onClick={() => { setOpen(false); trackEvent("nav_click", { label: n.label, href: n.href, location: "mobile_menu" }); }} style={{
  display: "block", padding: "12px 0", fontFamily: "'Outfit', sans-serif",
  fontWeight: 500, fontSize: 15, color: "#1C2B3A", textDecoration: "none",
  borderBottom: "1px solid rgba(28,43,58,0.06)",
  }}>{n.label}</a>
  ))}
- <a href="#contact" onClick={() => setOpen(false)} style={{
+ <a href="#contact" onClick={() => { setOpen(false); trackEvent("cta_click", { label: "Request Quote", location: "header_mobile" }); }} style={{
  display: "inline-block", marginTop: 16, padding: "10px 24px", background: "#1C2B3A",
  color: "#F4F1EC", fontFamily: "'Outfit', sans-serif", fontWeight: 600,
  fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", textDecoration: "none",

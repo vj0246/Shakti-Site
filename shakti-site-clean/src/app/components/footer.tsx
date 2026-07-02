@@ -1,16 +1,12 @@
 import { useState } from "react";
 import { Download, MapPin } from "lucide-react";
-import emailjs from "@emailjs/browser";
+import { trackEvent } from "../../lib/analytics";
 
 const FACTORY_MAPS = "https://www.google.com/maps/search/H+no+813+Mama+Compound+Thane+Nasik+Bypass+Saravali+Bhiwandi+421302";
 const OFFICE_MAPS  = "https://www.google.com/maps/search/A103+Ramji+House+Kalbadevi+Road+Mumbai+400002";
 
-const EMAILJS_SERVICE  = "service_shaktialloys";
-const EMAILJS_TEMPLATE = "template_shaktialloys";
-const EMAILJS_KEY      = "o1rNlis8Nij1IKM_1";
-
 export function Footer() {
-  const [form, setForm] = useState({ name:"", company:"", email:"", phone:"", product:"", qty:"", message:"" });
+  const [form, setForm] = useState({ name:"", company:"", email:"", phone:"", product:"", qty:"", message:"", website:"" });
   const [status, setStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
 
   const set = (e: React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement>) =>
@@ -20,23 +16,17 @@ export function Footer() {
     e.preventDefault();
     setStatus("sending");
     try {
-      await emailjs.send(
-        EMAILJS_SERVICE,
-        EMAILJS_TEMPLATE,
-        {
-          from_name: form.name,
-          company:   form.company  || "Not provided",
-          reply_to:  form.email,
-          phone:     form.phone    || "Not provided",
-          product:   form.product  || "Not specified",
-          qty:       form.qty      || "Not specified",
-          message:   form.message  || "—",
-        },
-        EMAILJS_KEY
-      );
+      const res = await fetch("/api/send-enquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error(`Enquiry API returned ${res.status}`);
+      trackEvent("form_submit", { product: form.product || "unspecified" });
       setStatus("sent");
     } catch (err) {
-      console.error("EmailJS error:", err);
+      console.error("Enquiry error:", err);
+      trackEvent("form_error");
       setStatus("error");
     }
   };
@@ -81,8 +71,8 @@ export function Footer() {
               ].map(d => (
                 <div key={d.name} style={{ background:"rgba(154,123,60,0.1)", border:"1px solid rgba(154,123,60,0.22)", padding:"14px 16px" }}>
                   <div style={{ fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:13, color:"#F4F1EC", marginBottom:6 }}>{d.name}</div>
-                  <a href={d.tel} style={{ fontFamily:"'Lora',serif", fontSize:13, color:"#C4A35A", textDecoration:"none", display:"block", marginBottom:4 }}>{d.phone}</a>
-                  <a href="mailto:shaktialloys123@gmail.com" style={{ fontFamily:"'Lora',serif", fontSize:11, color:"#7A8A9B", textDecoration:"none" }}>shaktialloys123@gmail.com</a>
+                  <a href={d.tel} onClick={() => trackEvent("phone_click", { name: d.name, phone: d.phone })} style={{ fontFamily:"'Lora',serif", fontSize:13, color:"#C4A35A", textDecoration:"none", display:"block", marginBottom:4 }}>{d.phone}</a>
+                  <a href="mailto:shaktialloys123@gmail.com" onClick={() => trackEvent("email_click", { name: d.name })} style={{ fontFamily:"'Lora',serif", fontSize:11, color:"#7A8A9B", textDecoration:"none" }}>shaktialloys123@gmail.com</a>
                 </div>
               ))}
             </div>
@@ -93,7 +83,7 @@ export function Footer() {
               { label:"Mumbai Office", addr:"A103 Ramji House, Kalbadevi Road\nMumbai 400 002 · 022 22003237", href:OFFICE_MAPS },
               { label:"Factory",       addr:"H no 813, Mama Compound, Saravali\nBhiwandi, Dist Thane – 421302",  href:FACTORY_MAPS },
             ].map(loc => (
-              <a key={loc.label} href={loc.href} target="_blank" rel="noopener noreferrer" style={{
+              <a key={loc.label} href={loc.href} target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("map_click", { location: loc.label })} style={{
                 display:"block", padding:"12px 14px", marginBottom:8,
                 background:"rgba(244,241,236,0.04)", border:"1px solid rgba(244,241,236,0.07)",
                 textDecoration:"none", transition:"border-color 0.2s",
@@ -110,7 +100,7 @@ export function Footer() {
               </a>
             ))}
 
-            <a href="/shakti-alloys-brochure.pdf" download style={{
+            <a href="/shakti-alloys-brochure.pdf" download onClick={() => trackEvent("brochure_download")} style={{
               display:"inline-flex", alignItems:"center", gap:8, marginTop:16,
               border:"1px solid rgba(154,123,60,0.5)", padding:"10px 20px",
               fontFamily:"'Outfit',sans-serif", fontWeight:600, fontSize:11,
@@ -131,13 +121,16 @@ export function Footer() {
                   Thank you. We will respond within one working day.<br/>
                   Urgent? Call <span style={{ color:"#C4A35A" }}>+91 93222 24565</span>
                 </p>
-                <button onClick={() => { setStatus("idle"); setForm({ name:"",company:"",email:"",phone:"",product:"",qty:"",message:"" }); }}
+                <button onClick={() => { setStatus("idle"); setForm({ name:"",company:"",email:"",phone:"",product:"",qty:"",message:"",website:"" }); }}
                   style={{ marginTop:20, background:"none", border:"1px solid rgba(154,123,60,0.4)", color:"#C4A35A", padding:"8px 20px", cursor:"pointer", fontFamily:"'Outfit',sans-serif", fontSize:11, letterSpacing:"0.08em" }}>
                   Send Another
                 </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                {/* Honeypot — hidden from humans, bots fill it and get silently dropped server-side */}
+                <input type="text" name="website" value={form.website} onChange={set} tabIndex={-1} autoComplete="off"
+                  style={{ position:"absolute", left:"-9999px", width:1, height:1, opacity:0 }} aria-hidden="true" />
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
                   <div><label style={lbl}>Full Name *</label><input name="name" required value={form.name} onChange={set} style={field} onFocus={e=>e.target.style.borderColor="#9A7B3C"} onBlur={e=>e.target.style.borderColor="rgba(28,43,58,0.15)"}/></div>
                   <div><label style={lbl}>Company</label><input name="company" value={form.company} onChange={set} style={field} onFocus={e=>e.target.style.borderColor="#9A7B3C"} onBlur={e=>e.target.style.borderColor="rgba(28,43,58,0.15)"}/></div>

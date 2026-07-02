@@ -317,7 +317,7 @@ export function ProductsSection() {
  {alloyIngots.map(g => (
  <button key={g.grade} onClick={() => setActiveGrade(g.grade)} style={{
  width: "100%", textAlign: "left", display: "block",
- padding: "12px 14px", background: "none", border: "none",
+ padding: "12px 14px", border: "none",
  borderLeft: `3px solid ${activeGrade === g.grade ? "#9A7B3C" : "transparent"}`,
  borderBottom: "1px solid rgba(28,43,58,0.06)",
  cursor: "pointer",

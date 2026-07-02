@@ -86,7 +86,7 @@ export function AboutSection() {
  <div className="reveal" style={{ transitionDelay: "0.15s" }}>
  <div style={{ position: "relative", marginBottom: 24 }}>
  <img
- src="/about-metal.png"
+ src="/hero-ingots.jpg"
  alt="Shakti Alloys manufacturing facility"
  loading="lazy"
  decoding="async"

@@ -72,7 +72,7 @@ export function FacilitiesSection() {
  {/* Factory image */}
  <div className="reveal" style={{ position: "relative", marginBottom: 72 }}>
  <img
- src="/spectro-lab.png"
+ src="/spectro-lab.jpg"
  alt="Manufacturing plant interior"
  loading="lazy"
  decoding="async"

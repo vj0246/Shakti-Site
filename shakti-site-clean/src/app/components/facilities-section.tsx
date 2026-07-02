@@ -69,20 +69,12 @@ export function FacilitiesSection() {
  </div>
  </div>
 
- {/* Factory image */}
- <div className="reveal" style={{ position: "relative", marginBottom: 72 }}>
- <img
- src="/spectro-lab.jpg"
- alt="Manufacturing plant interior"
- loading="lazy"
- decoding="async"
- style={{ width: "100%", height: 340, objectFit: "cover", objectPosition: "center top", display: "block", filter: "brightness(0.85) contrast(1.05)" }}
- />
- <div style={{ position: "absolute", bottom: 0, right: 0, background: "rgba(28,43,58,0.9)", padding: "12px 20px" }}>
- <p className="mono" style={{ fontSize: 10, color: "#9A7B3C", letterSpacing: "0.14em", textTransform: "uppercase" }}>
+ {/* QC assurance strip */}
+ <div className="reveal" style={{ display: "flex", alignItems: "center", gap: 16, padding: "18px 22px", background: "#1C2B3A", borderLeft: "3px solid #9A7B3C", marginBottom: 72 }}>
+ <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#C4A35A", flexShrink: 0 }} />
+ <span className="mono" style={{ fontSize: 11, color: "#C4A35A", letterSpacing: "0.14em", textTransform: "uppercase" }}>
  On-Site OES Spectrometric Testing · Every Heat Verified Before Dispatch
- </p>
- </div>
+ </span>
  </div>
 
  {/* ── USP — QUALITY, PRECISION, RELIABILITY ── */}

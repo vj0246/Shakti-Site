@@ -158,7 +158,7 @@ export function Footer() {
                     Something went wrong. Please call us directly or email shaktialloys123@gmail.com
                   </div>
                 )}
-                <button type="submit" disabled={status==="sending"} style={{
+                <button type="submit" disabled={status==="sending"} className="btn-shine" style={{
                   background: status==="sending" ? "#5A6A7A" : "#9A7B3C",
                   color:"#F4F1EC", padding:"13px 28px", border:"none",
                   fontFamily:"'Outfit',sans-serif", fontWeight:600,

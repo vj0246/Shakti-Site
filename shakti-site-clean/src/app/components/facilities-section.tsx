@@ -93,12 +93,17 @@ export function FacilitiesSection() {
  </p>
  </div>
 
- <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "rgba(28,43,58,0.1)" }}>
+ <div className="reveal reveal-stagger usp-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "rgba(28,43,58,0.1)" }}>
  {usps.map((u, i) => (
- <div key={i} style={{
+ <div key={i} className="tilt-card" style={{
  background: "#F4F1EC", padding: "26px 22px",
- transition: "background 0.2s",
  borderLeft: "3px solid transparent",
+ }}
+ onMouseMove={e => {
+ const r = e.currentTarget.getBoundingClientRect();
+ const x = (e.clientX - r.left) / r.width - 0.5;
+ const y = (e.clientY - r.top) / r.height - 0.5;
+ e.currentTarget.style.transform = `perspective(700px) rotateX(${(-y * 5).toFixed(2)}deg) rotateY(${(x * 5).toFixed(2)}deg) translateY(-2px)`;
  }}
  onMouseEnter={e => {
  e.currentTarget.style.background = "#EDE9E1";
@@ -107,6 +112,7 @@ export function FacilitiesSection() {
  onMouseLeave={e => {
  e.currentTarget.style.background = "#F4F1EC";
  e.currentTarget.style.borderLeftColor = "transparent";
+ e.currentTarget.style.transform = "";
  }}
  >
  <div style={{ fontSize: 26, marginBottom: 12 }}>{u.emoji}</div>
@@ -123,7 +129,7 @@ export function FacilitiesSection() {
  <span className="mono" style={{ fontSize: 11, color: "#9A7B3C", letterSpacing: "0.2em", textTransform: "uppercase" }}>Our Zero-Defect Production Process</span>
  <div style={{ flex: 1, height: 1, background: "rgba(28,43,58,0.1)" }} />
  </div>
- <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "rgba(28,43,58,0.08)" }}>
+ <div className="reveal reveal-stagger process-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "rgba(28,43,58,0.08)" }}>
  {processes.map((step, i) => (
  <div key={i} style={{ background: "#F4F1EC", padding: "28px 24px", transition: "background 0.2s" }}
  onMouseEnter={e => e.currentTarget.style.background = "#EDE9E1"}

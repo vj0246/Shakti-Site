@@ -34,6 +34,7 @@ export function Hero() {
           alt="Aluminium foundry manufacturing"
           fetchPriority="high"
           decoding="async"
+          className="hero-img"
           style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%", display: "block" }}
         />
         <div style={{
@@ -42,14 +43,14 @@ export function Hero() {
         }} />
 
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, maxWidth: 1200, margin: "0 auto", padding: "0 28px 52px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+          <div className="hero-rise-1" style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
             <span style={{ display: "block", width: 28, height: 1, background: "#9A7B3C" }} />
             <span className="mono" style={{ fontSize: 11, color: "#C4A35A", letterSpacing: "0.2em", textTransform: "uppercase" }}>
               Bhiwandi, India · ISO 9001:2015 · BIS Certified
             </span>
           </div>
 
-          <h1 style={{
+          <h1 className="hero-rise-2" style={{
             fontFamily: "'Outfit', sans-serif", fontWeight: 800,
             fontSize: "clamp(34px, 5vw, 64px)", color: "#F4F1EC",
             lineHeight: 1.06, letterSpacing: "-0.03em", marginBottom: 20, maxWidth: 740,
@@ -58,7 +59,7 @@ export function Hero() {
             of <span style={{ color: "#C4A35A" }}>Aluminium Alloy Ingots</span>
           </h1>
 
-          <p style={{
+          <p className="hero-rise-3" style={{
             fontFamily: "'Lora', serif", fontSize: "clamp(13px, 1.5vw, 15px)",
             color: "rgba(244,241,236,0.72)", lineHeight: 1.85, maxWidth: 500, marginBottom: 32,
           }}>
@@ -66,8 +67,8 @@ export function Hero() {
             and more — to automotive, electrical and industrial clients across 52 nations.
           </p>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-            <a href="#products" style={{
+          <div className="hero-rise-4" style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+            <a href="#products" className="btn-shine" style={{
               display: "inline-flex", alignItems: "center", gap: 9,
               background: "#9A7B3C", color: "#F4F1EC", padding: "12px 26px",
               fontFamily: "'Outfit', sans-serif", fontWeight: 600, fontSize: 13,

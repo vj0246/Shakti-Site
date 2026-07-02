@@ -331,7 +331,7 @@ export function ProductsSection() {
  </div>
 
  {/* Right — grade detail */}
- <div style={{ padding: "32px 36px" }}>
+ <div key={active.grade} className="grade-panel" style={{ padding: "32px 36px" }}>
  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6, flexWrap: "wrap", gap: 10 }}>
  <div>
  <h3 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 38, color: "#1C2B3A", lineHeight: 1, letterSpacing: "-0.02em" }}>{active.grade}</h3>
@@ -478,7 +478,7 @@ export function ProductsSection() {
  <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 14, color: "#F4F1EC", marginBottom: 4 }}> Need a custom grade or can't find what you're looking for?</div>
  <div style={{ fontFamily: "'Lora', serif", fontSize: 13, color: "#7A8A9B" }}>We manufacture to customer specification and source on request. One call, full solution.</div>
  </div>
- <a href="#contact" style={{
+ <a href="#contact" className="btn-shine" style={{
  padding: "11px 24px", background: "#9A7B3C", color: "#F4F1EC",
  fontFamily: "'Outfit', sans-serif", fontWeight: 600, fontSize: 12,
  letterSpacing: "0.08em", textTransform: "uppercase", textDecoration: "none",

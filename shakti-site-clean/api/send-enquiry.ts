@@ -8,7 +8,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 //   RESEND_API_KEY  — from https://resend.com/api-keys
 // Optional:
 //   ENQUIRY_TO      — destination inbox   (default: shaktialloys123@gmail.com)
-//   ENQUIRY_FROM    — verified sender     (default: onboarding@resend.dev)
+//   ENQUIRY_FROM    — verified sender     (default: enquiry@shaktialloys.in — domain must be verified in Resend)
 
 const MAX_LENGTHS: Record<string, number> = {
   name: 100,
@@ -62,7 +62,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const to = process.env.ENQUIRY_TO || "shaktialloys123@gmail.com";
-  const from = process.env.ENQUIRY_FROM || "Shakti Alloys Website <onboarding@resend.dev>";
+  const from = process.env.ENQUIRY_FROM || "Shakti Alloys Website <enquiry@shaktialloys.in>";
 
   const rows = [
     ["Name", f.name],

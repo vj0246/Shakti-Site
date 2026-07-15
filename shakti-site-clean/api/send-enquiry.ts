@@ -7,8 +7,10 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 // Required env vars (set in Vercel dashboard → Project → Settings → Environment Variables):
 //   RESEND_API_KEY  — from https://resend.com/api-keys
 // Optional:
-//   ENQUIRY_TO      — destination inbox   (default: shaktialloys123@gmail.com)
-//   ENQUIRY_FROM    — verified sender     (default: enquiry@shaktialloys.in — domain must be verified in Resend)
+//   ENQUIRY_TO         — destination inbox   (default: shaktialloys123@gmail.com)
+//   ENQUIRY_FROM       — verified sender     (default: enquiry@shaktialloys.in — domain must be verified in Resend)
+//   SHEETS_WEBHOOK_URL — Google Apps Script web-app URL; every enquiry is appended
+//                        as a row to the linked Google Sheet. Unset = logging skipped.
 
 const MAX_LENGTHS: Record<string, number> = {
   name: 100,
@@ -63,6 +65,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const to = process.env.ENQUIRY_TO || "shaktialloys123@gmail.com";
   const from = process.env.ENQUIRY_FROM || "Shakti Alloys Website <enquiry@shaktialloys.in>";
+
+  // Log to Google Sheet first so the enquiry survives even if email sending fails.
+  const sheetUrl = process.env.SHEETS_WEBHOOK_URL;
+  if (sheetUrl) {
+    try {
+      await fetch(sheetUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: f.name,
+          company: f.company,
+          email: f.email,
+          phone: f.phone,
+          product: f.product,
+          qty: f.qty,
+          message: f.message,
+        }),
+        signal: AbortSignal.timeout(5000),
+      });
+    } catch (err) {
+      console.error("Sheet log failed:", err);
+    }
+  }
 
   const rows = [
     ["Name", f.name],

@@ -1,68 +1,44 @@
-# Deployment Checklist — Production Hardening
+# Deployment - Shakti Alloys Site
 
-Branch `production-hardening` contains all changes. `main` holds the pre-hardening snapshot of the deployed site.
+Live at https://shaktialloys.in. Vercel project is Git-connected to https://github.com/vj0246/Shakti-Site (production branch `main`, root directory `shakti-site-clean`). Every push to `main` auto-deploys.
 
-## 1. Required before deploying this branch
+## Environment variables (Vercel dashboard > Settings > Environment Variables)
 
-### Resend (enquiry form backend)
-The contact form now POSTs to `/api/send-enquiry` (Vercel serverless function). EmailJS is fully removed.
+| Variable | Required | Purpose |
+|---|---|---|
+| `RESEND_API_KEY` | yes | Resend API key; form returns 500 without it |
+| `ENQUIRY_TO` | no | Destination inbox (default: shaktialloys123@gmail.com) |
+| `ENQUIRY_FROM` | no | Sender (default: `Shakti Alloys Website <enquiry@shaktialloys.in>`; the shaktialloys.in domain is verified in Resend - if that verification is ever removed, sends fail with 502 until this is set to a verified sender) |
+| `SHEETS_WEBHOOK_URL` | no | Google Apps Script web-app URL; each enquiry appends a row to the "Enquiries" Google Sheet. Unset = sheet logging skipped, email still sends |
 
-1. Create free account at https://resend.com (3,000 emails/month free).
-2. Create an API key: https://resend.com/api-keys
-3. In Vercel dashboard → Project → **Settings → Environment Variables**, add:
-   - `RESEND_API_KEY` = the key (all environments)
-4. **Sender address:** by default the function sends from `onboarding@resend.dev`, which Resend only delivers to the email address that owns the Resend account. Two options:
-   - **Quick:** sign up for Resend using `shaktialloys123@gmail.com` — works immediately.
-   - **Proper:** verify the `shaktialloys.in` domain in Resend (Settings → Domains, add the DNS records they show), then set env var `ENQUIRY_FROM` = `Shakti Alloys <enquiry@shaktialloys.in>`. Removes all delivery restrictions and improves deliverability.
-5. Optional env vars: `ENQUIRY_TO` (default `shaktialloys123@gmail.com`), `ENQUIRY_FROM`.
+Changing an env var requires a redeploy to take effect.
 
-### EmailJS cleanup (old service)
-The exposed public key `o1rNlis8Nij1IKM_1` shipped in the old bundle. After this branch deploys:
-- Log into EmailJS dashboard and **delete the API key / service**, or at minimum enable domain restriction. The key is in the wild (old deploys, caches) — treat it as burned.
+## Enquiry form pipeline
 
-## 2. Analytics
+Form POSTs to `/api/send-enquiry` (Vercel serverless function):
+honeypot check > validate/trim/cap fields > log row to Google Sheet and send email via Resend in parallel > respond. Sheet write is awaited even when email fails, so enquiries survive a Resend outage. Honeypot hits are logged (`Honeypot triggered`) in Vercel function logs.
 
-### Vercel Analytics
-`@vercel/analytics` is wired in `src/main.tsx`. Enable it: Vercel dashboard → Project → **Analytics** tab → Enable. Free tier included.
+## Analytics
 
-### Google Analytics 4
-Loader in `index.html` is inert until you paste a real ID:
-1. Create GA4 property at https://analytics.google.com → get Measurement ID (`G-...`).
-2. In `index.html`, replace `G-XXXXXXXXXX` in the line `var GA_ID = "G-XXXXXXXXXX";`.
-3. Redeploy. All existing `trackEvent` calls (form submits, phone clicks, brochure downloads, nav) start flowing automatically.
+- Vercel Analytics: wired in `src/main.tsx`; enable via dashboard > Analytics tab if not already on.
+- GA4: live with Measurement ID `G-CTQ1M0DS80`, initialised in `src/lib/analytics.ts` (`initAnalytics`). All `trackEvent` calls (form submits, phone clicks, brochure downloads) flow automatically. To change the ID, edit `GA_ID` in that file.
 
-## 3. After deploy
+## EmailJS cleanup (old service)
 
-### Google Search Console
-1. https://search.google.com/search-console → Add property `shaktialloys.in` (domain property, verify via DNS TXT record).
-2. Submit sitemap: `https://shaktialloys.in/sitemap.xml`.
-3. Request indexing for the homepage.
+The old bundle publicly shipped an EmailJS public key. That key is burned: log into the EmailJS dashboard and delete the API key / email service. (The key value is intentionally not repeated here.)
 
-### UptimeRobot (free monitoring)
-1. https://uptimerobot.com → free account.
-2. Add HTTP(S) monitor for `https://shaktialloys.in`, 5-minute interval, email alerts.
+## Post-deploy checks
 
-### Verify security headers
-After deploy, check https://securityheaders.com/?q=shaktialloys.in — should score A.
+- Security headers: https://securityheaders.com/?q=shaktialloys.in (CSP has no 'unsafe-inline' for scripts)
+- Google Search Console: add property `shaktialloys.in`, submit `https://shaktialloys.in/sitemap.xml`
+- UptimeRobot: HTTPS monitor on https://shaktialloys.in, 5-minute interval
+- OG previews: WhatsApp self-send, https://www.linkedin.com/post-inspector/
 
-### Verify OG previews
-- WhatsApp: send yourself the link.
-- LinkedIn: https://www.linkedin.com/post-inspector/
-- Facebook: https://developers.facebook.com/tools/debug/
-
-## 4. Known remaining items (optional)
-
-- **Brochure PDF is 13 MB** — consider compressing (e.g. https://www.ilovepdf.com/compress_pdf or Adobe) to ~2-3 MB. Big win for mobile users on Indian networks.
-- **Deploy via GitHub** — push this repo to GitHub and connect the repo in Vercel for automatic deploys per commit (currently CLI/manual deploys).
-- Six unused component files were deleted on this branch (never imported); they remain recoverable on `main`.
-
-## 5. Local development
+## Local development
 
 ```
 npm install
-npm run dev        # site at http://localhost:5173 (form API won't run — use `vercel dev` for that)
+npm run dev        # site at http://localhost:5173 (form API needs `npx vercel dev`)
 npm run typecheck  # must stay clean
 npm run build      # production build to dist/
 ```
-
-To test the serverless function locally: `npx vercel dev` (requires `vercel login` + link once).

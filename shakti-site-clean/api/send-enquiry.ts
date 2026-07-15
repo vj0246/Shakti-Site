@@ -2,14 +2,14 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 // ── Server-side enquiry handler ──────────────────────────────────────────────
 // Sends enquiry emails via Resend (https://resend.com). The API key lives ONLY
-// in Vercel environment variables — it is never exposed to the browser.
+// in Vercel environment variables - it is never exposed to the browser.
 //
 // Required env vars (set in Vercel dashboard → Project → Settings → Environment Variables):
-//   RESEND_API_KEY  — from https://resend.com/api-keys
+//   RESEND_API_KEY  - from https://resend.com/api-keys
 // Optional:
-//   ENQUIRY_TO         — destination inbox   (default: shaktialloys123@gmail.com)
-//   ENQUIRY_FROM       — verified sender     (default: enquiry@shaktialloys.in — domain must be verified in Resend)
-//   SHEETS_WEBHOOK_URL — Google Apps Script web-app URL; every enquiry is appended
+//   ENQUIRY_TO         - destination inbox   (default: shaktialloys123@gmail.com)
+//   ENQUIRY_FROM       - verified sender     (default: enquiry@shaktialloys.in - domain must be verified in Resend)
+//   SHEETS_WEBHOOK_URL - Google Apps Script web-app URL; every enquiry is appended
 //                        as a row to the linked Google Sheet. Unset = logging skipped.
 
 const MAX_LENGTHS: Record<string, number> = {
@@ -40,8 +40,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const body = (req.body ?? {}) as Record<string, unknown>;
 
-  // Honeypot — hidden field real users never fill. Bots do. Pretend success.
-  if (typeof body.website === "string" && body.website.trim() !== "") {
+  // Honeypot - hidden field real users never fill. Bots do. Pretend success.
+  // Logged so a false positive (e.g. browser autofill) is recoverable from Vercel logs.
+  if (typeof body.refcode === "string" && body.refcode.trim() !== "") {
+    console.warn("Honeypot triggered, enquiry dropped:", JSON.stringify({
+      name: typeof body.name === "string" ? body.name : "",
+      email: typeof body.email === "string" ? body.email : "",
+    }));
     return res.status(200).json({ ok: true });
   }
 
@@ -66,28 +71,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const to = process.env.ENQUIRY_TO || "shaktialloys123@gmail.com";
   const from = process.env.ENQUIRY_FROM || "Shakti Alloys Website <enquiry@shaktialloys.in>";
 
-  // Log to Google Sheet first so the enquiry survives even if email sending fails.
+  // Sheet log runs in parallel with the email send; both are awaited before
+  // responding, so the enquiry is recorded even when one of them fails.
   const sheetUrl = process.env.SHEETS_WEBHOOK_URL;
-  if (sheetUrl) {
-    try {
-      await fetch(sheetUrl, {
+  const sheetLog = sheetUrl
+    ? fetch(sheetUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: f.name,
-          company: f.company,
-          email: f.email,
-          phone: f.phone,
-          product: f.product,
-          qty: f.qty,
-          message: f.message,
-        }),
+        body: JSON.stringify(f),
         signal: AbortSignal.timeout(5000),
-      });
-    } catch (err) {
-      console.error("Sheet log failed:", err);
-    }
-  }
+      }).catch((err) => console.error("Sheet log failed:", err))
+    : Promise.resolve();
 
   const rows = [
     ["Name", f.name],
@@ -106,7 +100,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const html = `
     <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;border:1px solid #E2DDD3;">
       <div style="background:#1C2B3A;padding:18px 24px;">
-        <span style="color:#C4A35A;font-size:16px;font-weight:bold;">New Enquiry — shaktialloys.in</span>
+        <span style="color:#C4A35A;font-size:16px;font-weight:bold;">New Enquiry - shaktialloys.in</span>
       </div>
       <table style="width:100%;border-collapse:collapse;background:#F4F1EC;">${rows}</table>
       <div style="padding:16px 24px;background:#fff;">
@@ -116,20 +110,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     </div>`;
 
   try {
-    const resp = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from,
-        to: [to],
-        reply_to: f.email,
-        subject: `Enquiry: ${f.product || "General"} — ${f.name}${f.company ? ` (${f.company})` : ""}`,
-        html,
+    const [resp] = await Promise.all([
+      fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from,
+          to: [to],
+          reply_to: f.email,
+          subject: `Enquiry: ${f.product || "General"} - ${f.name}${f.company ? ` (${f.company})` : ""}`,
+          html,
+        }),
+        signal: AbortSignal.timeout(8000),
       }),
-    });
+      sheetLog,
+    ]);
 
     if (!resp.ok) {
       const detail = await resp.text();
@@ -140,6 +138,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error("Enquiry send failed:", err);
+    await sheetLog;
     return res.status(500).json({ error: "Failed to send email" });
   }
 }

@@ -30,9 +30,8 @@ export function Hero() {
       <div style={{ position: "relative", height: "88vh", minHeight: 540 }}>
         {/* Molten aluminium foundry pour — dramatic, real, industrial */}
         <img
-          src="/foundry-hero.png"
+          src="/foundry-hero.webp"
           alt="Aluminium foundry manufacturing"
-          fetchPriority="high"
           decoding="async"
           style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%", display: "block" }}
         />

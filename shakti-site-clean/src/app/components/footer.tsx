@@ -5,9 +5,12 @@ import { trackEvent } from "../../lib/analytics";
 const FACTORY_MAPS = "https://www.google.com/maps/search/H+no+813+Mama+Compound+Thane+Nasik+Bypass+Saravali+Bhiwandi+421302";
 const OFFICE_MAPS  = "https://www.google.com/maps/search/A103+Ramji+House+Kalbadevi+Road+Mumbai+400002";
 
+const EMPTY_FORM = { name:"", company:"", email:"", phone:"", product:"", qty:"", message:"", refcode:"" };
+
 export function Footer() {
-  const [form, setForm] = useState({ name:"", company:"", email:"", phone:"", product:"", qty:"", message:"", website:"" });
+  const [form, setForm] = useState(EMPTY_FORM);
   const [status, setStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const set = (e: React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement>) =>
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -15,13 +18,18 @@ export function Footer() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("sending");
+    setErrorMsg("");
     try {
       const res = await fetch("/api/send-enquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      if (!res.ok) throw new Error(`Enquiry API returned ${res.status}`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        if (typeof data?.error === "string") setErrorMsg(data.error);
+        throw new Error(`Enquiry API returned ${res.status}`);
+      }
       trackEvent("form_submit", { product: form.product || "unspecified" });
       setStatus("sent");
     } catch (err) {
@@ -121,23 +129,24 @@ export function Footer() {
                   Thank you. We will respond within one working day.<br/>
                   Urgent? Call <span style={{ color:"#C4A35A" }}>+91 93222 24565</span>
                 </p>
-                <button onClick={() => { setStatus("idle"); setForm({ name:"",company:"",email:"",phone:"",product:"",qty:"",message:"",website:"" }); }}
+                <button onClick={() => { setStatus("idle"); setForm(EMPTY_FORM); }}
                   style={{ marginTop:20, background:"none", border:"1px solid rgba(154,123,60,0.4)", color:"#C4A35A", padding:"8px 20px", cursor:"pointer", fontFamily:"'Outfit',sans-serif", fontSize:11, letterSpacing:"0.08em" }}>
                   Send Another
                 </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} style={{ display:"flex", flexDirection:"column", gap:12 }}>
-                {/* Honeypot — hidden from humans, bots fill it and get silently dropped server-side */}
-                <input type="text" name="website" value={form.website} onChange={set} tabIndex={-1} autoComplete="off"
+                {/* Honeypot - hidden from humans, bots fill it and get dropped server-side.
+                    Name deliberately avoids "website"/"url" so browser autofill never touches it. */}
+                <input type="text" name="refcode" value={form.refcode} onChange={set} tabIndex={-1} autoComplete="off"
                   style={{ position:"absolute", left:"-9999px", width:1, height:1, opacity:0 }} aria-hidden="true" />
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-                  <div><label style={lbl}>Full Name *</label><input name="name" required value={form.name} onChange={set} style={field} onFocus={e=>e.target.style.borderColor="#9A7B3C"} onBlur={e=>e.target.style.borderColor="rgba(28,43,58,0.15)"}/></div>
-                  <div><label style={lbl}>Company</label><input name="company" value={form.company} onChange={set} style={field} onFocus={e=>e.target.style.borderColor="#9A7B3C"} onBlur={e=>e.target.style.borderColor="rgba(28,43,58,0.15)"}/></div>
+                  <div><label style={lbl}>Full Name *</label><input name="name" required maxLength={100} value={form.name} onChange={set} style={field} onFocus={e=>e.target.style.borderColor="#9A7B3C"} onBlur={e=>e.target.style.borderColor="rgba(28,43,58,0.15)"}/></div>
+                  <div><label style={lbl}>Company</label><input name="company" maxLength={150} value={form.company} onChange={set} style={field} onFocus={e=>e.target.style.borderColor="#9A7B3C"} onBlur={e=>e.target.style.borderColor="rgba(28,43,58,0.15)"}/></div>
                 </div>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-                  <div><label style={lbl}>Email *</label><input name="email" type="email" required value={form.email} onChange={set} style={field} onFocus={e=>e.target.style.borderColor="#9A7B3C"} onBlur={e=>e.target.style.borderColor="rgba(28,43,58,0.15)"}/></div>
-                  <div><label style={lbl}>Phone</label><input name="phone" value={form.phone} onChange={set} style={field} onFocus={e=>e.target.style.borderColor="#9A7B3C"} onBlur={e=>e.target.style.borderColor="rgba(28,43,58,0.15)"}/></div>
+                  <div><label style={lbl}>Email *</label><input name="email" type="email" required maxLength={200} value={form.email} onChange={set} style={field} onFocus={e=>e.target.style.borderColor="#9A7B3C"} onBlur={e=>e.target.style.borderColor="rgba(28,43,58,0.15)"}/></div>
+                  <div><label style={lbl}>Phone</label><input name="phone" maxLength={30} value={form.phone} onChange={set} style={field} onFocus={e=>e.target.style.borderColor="#9A7B3C"} onBlur={e=>e.target.style.borderColor="rgba(28,43,58,0.15)"}/></div>
                 </div>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
                   <div>
@@ -147,15 +156,15 @@ export function Footer() {
                       {["ADC12","ADC6","A380","A356","LM2","LM4","LM6","LM9","LM13","LM16","LM20","LM24","LM25","AC2B","AC4B","AC4C","AlSi10Mg","AlSi9Cu3","Master Alloy","Silicon Metal","Zinc Ingots","Tin Ingots","Scrap Purchase","Custom Spec"].map(g=><option key={g}>{g}</option>)}
                     </select>
                   </div>
-                  <div><label style={lbl}>Quantity (MT)</label><input name="qty" placeholder="e.g. 25 MT / month" value={form.qty} onChange={set} style={field} onFocus={e=>e.target.style.borderColor="#9A7B3C"} onBlur={e=>e.target.style.borderColor="rgba(28,43,58,0.15)"}/></div>
+                  <div><label style={lbl}>Quantity (MT)</label><input name="qty" placeholder="e.g. 25 MT / month" maxLength={100} value={form.qty} onChange={set} style={field} onFocus={e=>e.target.style.borderColor="#9A7B3C"} onBlur={e=>e.target.style.borderColor="rgba(28,43,58,0.15)"}/></div>
                 </div>
                 <div>
                   <label style={lbl}>Message / Requirements</label>
-                  <textarea name="message" rows={4} placeholder="Destination, application, delivery schedule, custom spec..." value={form.message} onChange={set} style={{ ...field, resize:"vertical" }} onFocus={e=>e.target.style.borderColor="#9A7B3C"} onBlur={e=>e.target.style.borderColor="rgba(28,43,58,0.15)"}/>
+                  <textarea name="message" rows={4} maxLength={3000} placeholder="Destination, application, delivery schedule, custom spec..." value={form.message} onChange={set} style={{ ...field, resize:"vertical" }} onFocus={e=>e.target.style.borderColor="#9A7B3C"} onBlur={e=>e.target.style.borderColor="rgba(28,43,58,0.15)"}/>
                 </div>
                 {status === "error" && (
                   <div style={{ fontFamily:"'Lora',serif", fontSize:12, color:"#FF7F7F", padding:"8px 12px", border:"1px solid rgba(255,127,127,0.3)", background:"rgba(255,127,127,0.06)" }}>
-                    Something went wrong. Please call us directly or email shaktialloys123@gmail.com
+                    {errorMsg || "Something went wrong. Please call us directly or email shaktialloys123@gmail.com"}
                   </div>
                 )}
                 <button type="submit" disabled={status==="sending"} style={{

@@ -1,0 +1,43 @@
+# Vercel Speed Insights Installation Report
+
+## Summary
+Successfully installed and configured Vercel Speed Insights for the Shakti Alloys website (Vite + React + TypeScript project).
+
+## Changes Made
+
+### 1. Package Installation
+- Installed `@vercel/speed-insights@^2.0.0` package using npm
+- Package added to dependencies in `package.json`
+- Lock file (`package-lock.json`) updated with new dependency tree
+
+### 2. Code Integration
+Modified `src/main.tsx`:
+- Added import: `import { SpeedInsights } from '@vercel/speed-insights/react'`
+- Added `<SpeedInsights />` component to the React render tree, positioned after the existing `<Analytics />` component
+- Follows the same pattern as the existing Vercel Analytics integration
+
+### 3. Implementation Details
+- Used the React-specific package path (`@vercel/speed-insights/react`) as per official Vercel documentation for Vite/React projects
+- Placed the component at the root level in `main.tsx` to ensure it tracks all page interactions
+- Positioned alongside the existing `@vercel/analytics` component for consistency
+
+### 4. Verification
+- TypeScript type checking: ✅ Passed
+- Production build: ✅ Successfully built
+- No errors or warnings introduced
+
+## Files Modified
+1. `package.json` - Added @vercel/speed-insights dependency
+2. `package-lock.json` - Updated with new dependency tree
+3. `src/main.tsx` - Added SpeedInsights component import and usage
+
+## Framework-Specific Notes
+This is a Vite + React + TypeScript project, so I followed the official Vercel documentation for React/Vite projects:
+- Package used: `@vercel/speed-insights/react`
+- Component: `<SpeedInsights />`
+- Location: Root-level in main.tsx for comprehensive tracking
+
+## Next Steps
+Once deployed to Vercel, Speed Insights will automatically begin collecting Core Web Vitals and performance metrics. The tracking script will be served from `/_vercel/speed-insights/*` routes.
+
+No additional configuration is required. The Speed Insights dashboard will be available in the Vercel project dashboard after deployment.
